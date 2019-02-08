@@ -1,0 +1,26 @@
+{
+    "name": "usefuls",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/safrmo/usefuls.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/safrmo/usefuls/issues"
+    },
+    "homepage": "https://github.com/safrmo/usefuls#readme",
+    "dependencies": {
+        "@popmotion/popcorn": "^0.3.1",
+        "lodash": "^4.17.11",
+        "popmotion": "^8.6.2",
+        "vue": "^2.6.3"
+    }
+}
