@@ -1,5 +1,3 @@
-// Vue directive for firing events and adding classes when an item is in view.
-
 import throttle from 'lodash/throttle'
 import Vue from 'vue'
 
@@ -9,6 +7,7 @@ let bottom = 0
 let width = 0
 let left = 0
 let right = 0
+let eventFunction = null
 
 function setRect(el) {
     if (!el.getBoundingClientRect) {
@@ -28,6 +27,8 @@ function setHeight(el) {
 function setWidth(el) {
     width = el.clientWidth || 0
 }
+
+function removeListeners() {}
 
 function setClass(el, opts, runEvents = true) {
     // list of class names this directive might attach to the el
@@ -192,8 +193,16 @@ function setClass(el, opts, runEvents = true) {
 
     if (inViewVertical && inViewHorizontal) {
         el.classList.add(opts.inViewClass)
+        el.classList.add(opts.onceClass)
     } else {
         el.classList.remove(opts.inViewClass)
+    }
+
+    if (el.classList.contains(opts.inViewClass) && opts.once) {
+        // remove listener if we're in-view
+        window.removeEventListener('scroll', eventFunction)
+        window.removeEventListener('mousewheel', eventFunction)
+        window.removeEventListener('resize', eventFunction)
     }
 }
 
@@ -241,33 +250,24 @@ export default {
                 : null,
             paddingLeft: bindingValue.hasOwnProperty('paddingLeft')
                 ? bindingValue.paddingLeft
-                : null
+                : null,
+
+            once: binding.modifiers.once != undefined,
+            onceClass: bindingValue.hasOwnProperty('onceClass')
+                ? bindingValue.onceClass
+                : 'fired-once'
         }
 
-        window.addEventListener(
-            'scroll',
-            throttle(() => {
-                setHeight(el, opts)
-                setRect(el, opts)
-                setClass(el, opts)
-            }, opts.throttle)
-        )
-        window.addEventListener(
-            'mousewheel',
-            throttle(() => {
-                setHeight(el, opts)
-                setRect(el, opts)
-                setClass(el, opts)
-            }, opts.throttle)
-        )
-        window.addEventListener(
-            'resize',
-            throttle(() => {
-                setHeight(el, opts)
-                setRect(el, opts)
-                setClass(el, opts)
-            }, opts.throttle)
-        )
+        // save the function so we can remove it later if needed
+        eventFunction = throttle(() => {
+            setHeight(el, opts)
+            setRect(el, opts)
+            setClass(el, opts)
+        }, opts.throttle)
+
+        window.addEventListener('scroll', eventFunction)
+        window.addEventListener('mousewheel', eventFunction)
+        window.addEventListener('resize', eventFunction)
 
         // wait so we render the element
         await Vue.nextTick()
@@ -285,5 +285,11 @@ export default {
             left + width > 0 &&
             left < window.innerWidth
         setClass(el, opts, runEvents)
+    },
+    unbind: function() {
+        // remove all listeners on unbind
+        window.removeEventListener('scroll', eventFunction)
+        window.removeEventListener('mousewheel', eventFunction)
+        window.removeEventListener('resize', eventFunction)
     }
 }

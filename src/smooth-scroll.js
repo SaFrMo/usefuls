@@ -13,7 +13,7 @@ export default smoothing => {
             this.scheduler = schedule(everyFrame(), listen(window, 'scroll'))
                 .pipe(
                     e => {
-                        return e.pageY
+                        return pageYOffset
                     },
                     smooth(smoothing)
                 )
